@@ -102,10 +102,10 @@ export default function LandingPage() {
           </div>
           <nav className="hidden md:flex gap-8">
             <Link
-              href="#features"
+              href="/dashboard"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              Features
+              Dashboard
             </Link>
             <Link
               href="#demo"
@@ -163,8 +163,8 @@ export default function LandingPage() {
             className="md:hidden absolute top-16 inset-x-0 bg-background/95 backdrop-blur-lg border-b"
           >
             <div className="container py-4 flex flex-col gap-4">
-              <Link href="#features" className="py-2 text-sm font-medium" onClick={() => setMobileMenuOpen(false)}>
-                Features
+              <Link href="/dashboard" className="py-2 text-sm font-medium" onClick={() => setMobileMenuOpen(false)}>
+                Dashboard
               </Link>
               <Link href="#demo" className="py-2 text-sm font-medium" onClick={() => setMobileMenuOpen(false)}>
                 Demo
@@ -192,7 +192,7 @@ export default function LandingPage() {
       </header>
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="w-full py-20 md:py-32 lg:py-40 overflow-hidden">
+        <section className="w-full pb-20 pt-5 overflow-hidden">
           <div className="container px-4 md:px-6 relative">
             <div className="absolute inset-0 -z-10 h-full w-full bg-white dark:bg-black bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1f1f1f_1px,transparent_1px),linear-gradient(to_bottom,#1f1f1f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]"></div>
 

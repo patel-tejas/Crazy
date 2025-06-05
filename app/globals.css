@@ -92,3 +92,43 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+
+/* Ensure proper email content styling */
+.email-content {
+  color: inherit !important;
+}
+
+.email-content p {
+  margin-bottom: 1rem;
+  color: inherit;
+}
+
+.email-content a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.dark .email-content a {
+  color: #60a5fa;
+}
+
+.email-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.email-content table {
+  width: 100% !important;
+  border-collapse: collapse;
+}
+
+.email-content table, .email-content th, .email-content td {
+  border: 1px solid #e5e7eb;
+}
+
+.dark .email-content table, 
+.dark .email-content th, 
+.dark .email-content td {
+  border: 1px solid #4b5563;
+}
