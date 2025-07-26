@@ -33,6 +33,7 @@ interface CustomLabel {
     id: string;
     name: string;
     color: string;
+    type?: 'system' | 'user'; // Add type to distinguish between system and user labels
 }
 
 interface EmailContextType {
@@ -87,7 +88,7 @@ export const EmailProvider: React.FC<EmailProviderProps> = ({ children }) => {
     const [selectedFolder, setSelectedFolder] = useState('INBOX');
     const [selectedCategory, setSelectedCategory] = useState<string | null>('CATEGORY_PRIMARY');
 
-    // Custom labels
+    // Custom labels - now includes all Gmail labels
     const [customLabels, setCustomLabels] = useState<CustomLabel[]>(() => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('customLabels');
@@ -390,11 +391,36 @@ export const EmailProvider: React.FC<EmailProviderProps> = ({ children }) => {
             const response = await window.gapi.client.gmail.users.labels.list({
                 userId: 'me'
             });
-            setLabels(response.result.labels || []);
+
+            
+            const allLabels = response.result.labels.filter((label: any) => {
+                // Filter out system labels that are not user-created
+                return label.type === 'user';
+            });
+            console.log('Fetched labels:', allLabels);
+            
+            setLabels(allLabels);
+            
+         
+            
+            const newCustomLabels = allLabels.map((label: any) => {
+                // Check if we already have this label in customLabels
+                const existing = customLabels.find(l => l.id === label.id);
+                
+                return {
+                    id: label.id,
+                    name: label.name,
+                    color: existing?.color || labelColors[label.id] || `bg-${['blue','green','purple','red','yellow','indigo'][Math.floor(Math.random() * 6)]}-500`,
+                    type: label.type === 'system' ? 'system' : 'user'
+                };
+            });
+            
+            setCustomLabels(newCustomLabels);
+            localStorage.setItem('customLabels', JSON.stringify(newCustomLabels));
         } catch (error) {
             console.error('Failed to fetch labels:', error);
         }
-    }, []);
+    }, [customLabels]);
 
     const fetchGmailData = useCallback(async (labelId = 'INBOX', pageToken?: string, isLoadMore = false) => {
         try {
@@ -436,7 +462,7 @@ export const EmailProvider: React.FC<EmailProviderProps> = ({ children }) => {
             const messagesResponse = await window.gapi.client.gmail.users.messages.list({
                 userId: 'me',
                 labelIds: [labelId],
-                maxResults: 20,
+                maxResults: 100,
                 pageToken: pageToken || undefined,
                 q: dateQuery
             });
@@ -639,12 +665,19 @@ export const EmailProvider: React.FC<EmailProviderProps> = ({ children }) => {
 
     const loadMoreEmails = useCallback(() => {
         if (isGmailAuthorized && nextPageToken) {
-            fetchGmailData(currentLabelId, nextPageToken, true);
+            let labelId = selectedFolder;
+            if (selectedFolder === 'All') labelId = 'ALL';
+            if (selectedFolder === 'Sent') labelId = 'SENT';
+            if (selectedFolder === 'Starred') labelId = 'STARRED';
+            if (selectedFolder === 'Trash') labelId = 'TRASH';
+            if (selectedFolder === 'Spam') labelId = 'SPAM';
+            
+            fetchGmailData(labelId, nextPageToken, true);
         }
-    }, [isGmailAuthorized, fetchGmailData, nextPageToken, currentLabelId]);
+    }, [isGmailAuthorized, fetchGmailData, nextPageToken, selectedFolder]);
 
     const addLabel = useCallback(async (name: string) => {
-        if (customLabels.length >= 5) return;
+        if (customLabels.length >= 20) return;
 
         try {
             // Create label via Gmail API
@@ -666,7 +699,8 @@ export const EmailProvider: React.FC<EmailProviderProps> = ({ children }) => {
             const newCustomLabel: CustomLabel = {
                 id: newLabel.id,
                 name: newLabel.name,
-                color: `bg-${['blue', 'green', 'purple', 'red', 'yellow'][customLabels.length % 5]}-500`
+                color: `bg-${['blue','green','purple','red','yellow','indigo','pink','teal','orange','cyan'][customLabels.length % 10]}-500`,
+                type: 'user'
             };
 
             const updatedLabels = [...customLabels, newCustomLabel];
@@ -754,7 +788,7 @@ export const EmailProvider: React.FC<EmailProviderProps> = ({ children }) => {
         }
     }, [selectedFolder, isGmailAuthorized]);
 
-    const contextValue: EmailContextType = {
+    const contextValue: EmailContextType = useMemo(() => ({
         gmailEmails,
         isLoading,
         isGmailAuthorized,
@@ -781,7 +815,34 @@ export const EmailProvider: React.FC<EmailProviderProps> = ({ children }) => {
         selectedFolder,
         selectedCategory,
         isLoadingMore
-    };
+    }), [
+        gmailEmails,
+        isLoading,
+        isGmailAuthorized,
+        totalEmails,
+        labels,
+        customLabels,
+        error,
+        nextPageToken,
+        refreshEmails,
+        loadMoreEmails,
+        markAsRead,
+        markAsUnread,
+        toggleStar,
+        deleteEmail,
+        addLabel,
+        removeLabel,
+        handleGmailAuth,
+        revokeGmailAccess,
+        addEmailLabel,
+        filteredEmails,
+        setSearchQuery,
+        setSelectedFolder,
+        setSelectedCategory,
+        selectedFolder,
+        selectedCategory,
+        isLoadingMore
+    ]);
 
     return (
         <EmailContext.Provider value={contextValue}>
